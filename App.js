@@ -2,23 +2,22 @@ import React, { useState, useEffect, useMemo, useContext } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import * as SecureStore from 'expo-secure-store';
 
-import { AuthContext } from './context/AuthContext'; 
+import { AuthContext } from './context/AuthContext';
+import { saveToken, getToken, removeToken } from './api/tokenService';
 
 import HomeScreen from './screens/HomeScreen';
 import ChatScreen from './screens/ChatScreen';
 import PlansListScreen from './screens/PlansListScreen';
 import CreatePlanScreen from './screens/CreatePlanScreen';
 import PlanDetailScreen from './screens/PlanDetailScreen';
-import AuthScreen from './screens/authscreen'; 
+import AuthScreen from './screens/authscreen';
 
 import { registerForPushNotificationsAsync } from './services/pushNotifications';
 
 const Stack = createNativeStackNavigator();
 
 function AppStack() {
-  // --- [REMOVED] The problematic useEffect is no longer here ---
   return (
     <Stack.Navigator initialRouteName="Home">
       <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
@@ -52,44 +51,39 @@ function RootNavigator() {
   return userToken ? <AppStack /> : <AuthStack />;
 }
 
-
 export default function App() {
   const [userToken, setUserToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const bootstrapAsync = async () => {
-      let token;
       try {
-        token = await SecureStore.getItemAsync('userToken');
+        const token = await getToken();
+        setUserToken(token);
       } catch (e) {
         console.error('Restoring token failed', e);
+      } finally {
+        setIsLoading(false);
       }
-      setUserToken(token);
-      setIsLoading(false);
     };
 
     bootstrapAsync();
   }, []);
-  
-  // --- [NEW] SAFER useEffect FOR PUSH NOTIFICATIONS ---
+
   useEffect(() => {
-    // This effect runs only when the userToken state changes.
     if (userToken) {
-      // If a token exists (user is logged in), THEN we register for notifications.
-      // This guarantees the token is in SecureStore before this runs.
       console.log("User logged in. Registering for push notifications...");
       registerForPushNotificationsAsync();
     }
-  }, [userToken]); // Dependency array makes this hook watch the userToken state
+  }, [userToken]);
 
   const authContext = useMemo(() => ({
     signIn: async (token) => {
-      await SecureStore.setItemAsync('userToken', token);
+      await saveToken(token);
       setUserToken(token);
     },
     signOut: async () => {
-      await SecureStore.deleteItemAsync('userToken');
+      await removeToken();
       setUserToken(null);
     },
     userToken,

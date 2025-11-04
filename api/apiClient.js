@@ -1,27 +1,22 @@
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
+import { getToken } from './tokenService'; // <-- cross-platform token helper
 
-// This is the same URL from your AuthScreen
 const API_URL = 'https://backend-app-jjw5.onrender.com';
 
 const apiClient = axios.create({
-    baseURL: API_URL,
+  baseURL: API_URL,
 });
 
-// This is the magic! We are using an "interceptor" to modify requests before they are sent.
+// Add interceptor to include token automatically
 apiClient.interceptors.request.use(
-    async (config) => {
-        // Get the token from secure storage
-        const token = await SecureStore.getItemAsync('userToken');
-        if (token) {
-            // If the token exists, add it to the 'x-auth-token' header
-            config.headers['x-auth-token'] = token;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+  async (config) => {
+    const token = await getToken(); // works on web + mobile
+    if (token) {
+      config.headers['x-auth-token'] = token;
     }
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
 export default apiClient;
