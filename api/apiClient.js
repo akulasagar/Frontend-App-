@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 // This is the same URL from your AuthScreen
-const API_URL = 'http://192.168.1.55:5001';
+const API_URL = 'https://backend-app-jjw5.onrender.com';
 
 const apiClient = axios.create({
     baseURL: API_URL,
