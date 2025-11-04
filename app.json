@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "my-ai-assistant-app",
+    "slug": "aura",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "aura.com",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.yourname.aiassistant",
+      "googleServicesFile": "./google-services.json",
+      "softwareKeyboardLayoutMode": "resize"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5479deee-011b-4085-a377-db87ee685e71"
+      }
+    },
+    "owner": "sagar9876",
+    "plugins": [
+      "expo-secure-store",
+      "expo-font"
+    ]
+  }
+}
