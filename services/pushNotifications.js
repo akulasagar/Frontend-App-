@@ -2,8 +2,8 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { Platform, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiClient from '../api/apiClient';
+import { getToken } from '../api/tokenService'; // ✅ ensures JWT is used
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -15,7 +15,7 @@ Notifications.setNotificationHandler({
 });
 
 export async function registerForPushNotificationsAsync() {
-  let token;
+  let expoPushToken;
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
@@ -26,54 +26,55 @@ export async function registerForPushNotificationsAsync() {
     });
   }
 
-  if (Device.isDevice) {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
+  if (!Device.isDevice) {
+    Alert.alert('Device Required', 'Must use a physical device for Push Notifications.');
+    return;
+  }
 
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
+  // ✅ Request permission
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
 
-    if (finalStatus !== 'granted') {
-      Alert.alert(
-        'Permission Required',
-        'To receive task reminders, please enable push notifications for Aura in your device settings.'
-      );
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+
+  if (finalStatus !== 'granted') {
+    Alert.alert(
+      'Permission Required',
+      'To receive reminders, please enable push notifications for Aura in your device settings.'
+    );
+    return;
+  }
+
+  try {
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ||
+      "ae2e214e-f0e7-43c2-89b0-7a41e3920bdf"; // fallback ID
+
+    // ✅ Get Expo push token
+    expoPushToken = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+    console.log("Expo Push Token:", expoPushToken);
+
+    // ✅ Get saved JWT token
+    const jwt = await getToken();
+    if (!jwt) {
+      console.warn("⚠️ No JWT token found — user might not be logged in.");
       return;
     }
 
-    try {
-      const projectId =
-        Constants.expoConfig?.extra?.eas?.projectId ||
-        "ae2e214e-f0e7-43c2-89b0-7a41e3920bdf"; // fallback project ID
+    // ✅ Send token to backend (auth header auto-added by apiClient)
+    const response = await apiClient.put('/api/users/pushtoken', {
+      pushToken: expoPushToken,
+    });
 
-      token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
-      console.log("Expo Push Token:", token);
+    console.log("✅ Push token successfully sent to backend:", response.data);
 
-      const userJson = await AsyncStorage.getItem('user');
-      const user = JSON.parse(userJson);
-
-      if (!user?._id) {
-        console.warn("⚠️ No user ID found in storage, cannot send push token.");
-        return;
-      }
-
-      await apiClient.post('/api/users/pushtoken', {
-        userId: user._id,
-        pushToken: token,
-      });
-
-      console.log("✅ Push token successfully sent to backend.");
-
-    } catch (e) {
-      console.error("❌ Failed to get or send push token:", e);
-      Alert.alert('Error', 'An error occurred while setting up notifications.');
-    }
-
-  } else {
-    Alert.alert('Device Required', 'Must use a physical device for Push Notifications.');
+  } catch (error) {
+    console.error("❌ Failed to get or send push token:", error.message);
+    Alert.alert('Error', 'An error occurred while setting up notifications.');
   }
 
-  return token;
+  return expoPushToken;
 }
