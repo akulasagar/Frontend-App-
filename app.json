@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "aura.com",
+      "bundleIdentifier": "com.sagar00.myaiassistant",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -25,22 +25,21 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.yourname.aiassistant",
-      "googleServicesFile": "./google-services.json",
+      "package": "com.sagar00.myaiassistant",
       "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "5479deee-011b-4085-a377-db87ee685e71"
-      }
-    },
-    "owner": "sagar9876",
+    "owner": "sagar00",
     "plugins": [
       "expo-secure-store",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ae2e214e-f0e7-43c2-89b0-7a41e3920bdf"
+      }
+    }
   }
 }
