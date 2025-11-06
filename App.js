@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AuthContext } from './context/AuthContext';
 import { saveToken, getToken, removeToken } from './api/tokenService';
-
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import HomeScreen from './screens/HomeScreen';
 import ChatScreen from './screens/ChatScreen';
 import PlansListScreen from './screens/PlansListScreen';
