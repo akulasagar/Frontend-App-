@@ -55,6 +55,13 @@ export default function App() {
   const [userToken, setUserToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+
+   useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: '710235343000-q8778jph39ksn57jvo5c14k6q3b3i256.apps.googleusercontent.com', // 👈 Replace this with your real Web Client ID
+    });
+  }, []);
+  
   useEffect(() => {
     const bootstrapAsync = async () => {
       try {
